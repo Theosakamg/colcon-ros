@@ -25,5 +25,17 @@ class GradleTestTask(TaskExtensionPoint):
 
         # reuse Gradle test task
         extension = GradleTestTask_()
+        deps = []
+        for dep in self.context.pkg.dependencies['test'] or []:
+            if dep in self.context.dependencies:
+                deps.append(self.context.dependencies[dep])
+        ros_gradle_args = [
+            '-Pcolcon.source_space=' + args.path,
+            '-Pcolcon.build_space=' + args.build_base,
+            '-Pcolcon.install_space=' + args.install_base,
+            '-Pcolcon.dependencies=' + ':'.join(deps),
+        ]
+        args.gradle_args += ros_gradle_args
+        
         extension.set_context(context=self.context)
         return await extension.test()

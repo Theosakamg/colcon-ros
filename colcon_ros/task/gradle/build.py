@@ -25,5 +25,17 @@ class GradleBuildTask(TaskExtensionPoint):
 
         # reuse Gradle build task with additional logic
         extension = GradleBuildTask_()
+        deps = []
+        for dep in self.context.pkg.dependencies['build'] or []:
+            if dep in self.context.dependencies:
+                deps.append(self.context.dependencies[dep])
+        ros_gradle_args = [
+            '-Pcolcon.source_space=' + args.path,
+            '-Pcolcon.build_space=' + args.build_base,
+            '-Pcolcon.install_space=' + args.install_base,
+            '-Pcolcon.dependencies=' + ':'.join(deps),
+        ]
+        args.gradle_args += ros_gradle_args
         extension.set_context(context=self.context)
+        
         return await extension.build()
